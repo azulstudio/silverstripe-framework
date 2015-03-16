@@ -2,34 +2,34 @@
 /**
  * Object representing a SQL query.
  * The various parts of the SQL query can be manipulated individually.
- * 
+ *
  * Caution: Only supports SELECT (default) and DELETE at the moment.
- * 
+ *
  * @todo Add support for INSERT and UPDATE queries
- * 
+ *
  * @package framework
  * @subpackage model
  */
 class SQLQuery {
-	
+
 	/**
 	 * An array of SELECT fields, keyed by an optional alias.
 	 * @var array
 	 */
 	protected $select = array();
-	
+
 	/**
 	 * An array of FROM clauses. The first one is just the table name.
 	 * @var array
 	 */
 	protected $from = array();
-	
+
 	/**
 	 * An array of WHERE clauses.
 	 * @var array
 	 */
 	protected $where = array();
-	
+
 	/**
 	 * An array of ORDER BY clauses, functions. Stores as an associative
 	 * array of column / function to direction.
@@ -37,43 +37,43 @@ class SQLQuery {
 	 * @var string
 	 */
 	protected $orderby = array();
-	
+
 	/**
 	 * An array of GROUP BY clauses.
 	 * @var array
 	 */
 	protected $groupby = array();
-	
+
 	/**
 	 * An array of having clauses.
 	 * @var array
 	 */
 	protected $having = array();
-	
+
 	/**
 	 * An array containing limit and offset keys for LIMIT clause.
 	 * @var array
 	 */
 	protected $limit = array();
-	
+
 	/**
 	 * If this is true DISTINCT will be added to the SQL.
 	 * @var boolean
 	 */
 	protected $distinct = false;
-	
+
 	/**
 	 * If this is true, this statement will delete rather than select.
 	 * @var boolean
 	 */
 	protected $delete = false;
-	
+
 	/**
 	 * The logical connective used to join WHERE clauses. Defaults to AND.
 	 * @var string
 	 */
 	protected $connective = 'AND';
-	
+
 	/**
 	 * Keep an internal register of find/replace pairs to execute when it's time to actually get the
 	 * query SQL.
@@ -198,7 +198,7 @@ class SQLQuery {
 				$this->selectField($field, is_numeric($idx) ? null : $idx);
 			}
 		}
-		
+
 		return $this;
 	}
 
@@ -228,14 +228,14 @@ class SQLQuery {
 	 * Return the SQL expression for the given field alias.
 	 * Returns null if the given alias doesn't exist.
 	 * See {@link selectField()} for details on alias generation.
-	 * 
+	 *
 	 * @param String $field
 	 * @return String
 	 */
 	public function expressionForField($field) {
 		return isset($this->select[$field]) ? $this->select[$field] : null;
 	}
-	
+
 	/**
 	 * Set table for the SELECT clause.
 	 *
@@ -271,15 +271,15 @@ class SQLQuery {
 		Deprecation::notice('3.0', 'Please use setFrom() or addFrom() instead!');
 		return $this->setFrom($from);
 	}
-	
+
 	/**
 	 * Add a LEFT JOIN criteria to the FROM clause.
 	 *
 	 * @param string $table Unquoted table name
-	 * @param string $onPredicate The "ON" SQL fragment in a "LEFT JOIN ... AS ... ON ..." statement, Needs to be valid 
+	 * @param string $onPredicate The "ON" SQL fragment in a "LEFT JOIN ... AS ... ON ..." statement, Needs to be valid
 	 *                            (quoted) SQL.
 	 * @param string $tableAlias Optional alias which makes it easier to identify and replace joins later on
-	 * @param int $order A numerical index to control the order that joins are added to the query; lower order values 
+	 * @param int $order A numerical index to control the order that joins are added to the query; lower order values
 	 *                   will cause the query to appear first. The default is 20, and joins created automatically by the
 	 *                   ORM have a value of 10.
 	 * @return SQLQuery
@@ -291,7 +291,7 @@ class SQLQuery {
 		$this->from[$tableAlias] = array(
 			'type' => 'LEFT',
 			'table' => $table,
-			'filter' => array($onPredicate), 
+			'filter' => array($onPredicate),
 			'order' => $order
 		);
 		return $this;
@@ -306,10 +306,10 @@ class SQLQuery {
 	 * Add an INNER JOIN criteria to the FROM clause.
 	 *
 	 * @param string $table Unquoted table name
-	 * @param string $onPredicate The "ON" SQL fragment in an "INNER JOIN ... AS ... ON ..." statement. Needs to be 
+	 * @param string $onPredicate The "ON" SQL fragment in an "INNER JOIN ... AS ... ON ..." statement. Needs to be
 	 *                            valid (quoted) SQL.
 	 * @param string $tableAlias Optional alias which makes it easier to identify and replace joins later on
-	 * @param int $order A numerical index to control the order that joins are added to the query; lower order values 
+	 * @param int $order A numerical index to control the order that joins are added to the query; lower order values
 	 *                   will cause the query to appear first. The default is 20, and joins created automatically by the
 	 *                   ORM have a value of 10.
 	 * @return SQLQuery
@@ -353,24 +353,24 @@ class SQLQuery {
 		$this->from[$table]['filter'] = array($filter);
 		return $this;
 	}
-	
+
 	/**
 	 * Returns true if we are already joining to the given table alias
-	 * 
+	 *
 	 * @return boolean
 	 */
 	public function isJoinedTo($tableAlias) {
 		return isset($this->from[$tableAlias]);
 	}
-	
+
 	/**
 	 * Return a list of tables that this query is selecting from.
-	 * 
+	 *
 	 * @return array Unquoted table names
 	 */
 	public function queriedTables() {
 		$tables = array();
-		
+
 		foreach($this->from as $key => $tableClause) {
 			if(is_array($tableClause)) {
 				$table = '"'.$tableClause['table'].'"';
@@ -382,11 +382,11 @@ class SQLQuery {
 
 			// Handle string replacements
 			if($this->replacementsOld) $table = str_replace($this->replacementsOld, $this->replacementsNew, $table);
-			
+
 			$tables[] = preg_replace('/^"|"$/','',$table);
 		}
-		
-		return $tables;	
+
+		return $tables;
 	}
 
 	/**
@@ -528,7 +528,7 @@ class SQLQuery {
 		if(!$clauses) {
 			return $this;
 		}
-		
+
 		if(is_string($clauses)) {
 			if(strpos($clauses, "(") !== false) {
 				$sort = preg_split("/,(?![^()]*+\\))/", $clauses);
@@ -537,13 +537,13 @@ class SQLQuery {
 			}
 
 			$clauses = array();
-			
+
 			foreach($sort as $clause) {
 				list($column, $direction) = $this->getDirectionFromString($clause, $direction);
 				$clauses[$column] = $direction;
 			}
 		}
-		
+
 		if(is_array($clauses)) {
 			foreach($clauses as $key => $value) {
 				if(!is_numeric($key)) {
@@ -571,7 +571,7 @@ class SQLQuery {
 
 				// public function calls and multi-word columns like "CASE WHEN ..."
 				if(strpos($clause, '(') !== false || strpos($clause, " ") !== false ) {
-					
+
 					// Move the clause to the select fragment, substituting a placeholder column in the sort fragment.
 					$clause = trim($clause);
 					$column = "_SortColumn{$i}";
@@ -579,7 +579,7 @@ class SQLQuery {
 					$clause = '"' . $column . '"';
 					$i++;
 				}
-				
+
 				$orderby[$clause] = $dir;
 			}
 			$this->orderby = $orderby;
@@ -595,7 +595,7 @@ class SQLQuery {
 
 	/**
 	 * Extract the direction part of a single-column order by clause.
-	 * 
+	 *
 	 * @param String
 	 * @param String
 	 * @return Array A two element array: array($column, $direction)
@@ -641,7 +641,7 @@ class SQLQuery {
 
 		return $orderby;
 	}
-	
+
 	/**
 	 * Reverses the order by clause by replacing ASC or DESC references in the
 	 * current order by with it's corollary.
@@ -659,7 +659,7 @@ class SQLQuery {
 
 		return $this;
 	}
-	
+
 	/**
 	 * Set a GROUP BY clause.
 	 *
@@ -767,7 +767,7 @@ class SQLQuery {
 		} elseif(!empty($where)) {
 			$this->where[] = $where;
 		}
-		
+
 		return $this;
 	}
 
@@ -798,7 +798,7 @@ class SQLQuery {
 		$clause = implode(" OR ", $filters);
 		return $this->addWhere($clause);
 	}
-		
+
 	/**
 	 * Use the disjunctive operator 'OR' to join filter expressions in the WHERE clause.
 	 */
@@ -812,10 +812,10 @@ class SQLQuery {
 	public function useConjunction() {
 		$this->connective = 'AND';
 	}
-	
+
 	/**
 	 * Swap the use of one table with another.
-	 * 
+	 *
 	 * @param string $old Name of the old table (unquoted, escaped)
 	 * @param string $new Name of the new table (unquoted, escaped)
 	 */
@@ -823,10 +823,10 @@ class SQLQuery {
 		$this->replaceText("`$old`", "`$new`");
 		$this->replaceText("\"$old\"", "\"$new\"");
 	}
-	
+
 	/**
 	 * Swap some text in the SQL query with another.
-	 * 
+	 *
 	 * @param string $old The old text (escaped)
 	 * @param string $new The new text (escaped)
 	 */
@@ -884,7 +884,7 @@ class SQLQuery {
 
 	/**
 	 * Generate the SQL statement for this query.
-	 * 
+	 *
 	 * @return string
 	 */
 	public function sql() {
@@ -896,23 +896,26 @@ class SQLQuery {
 		// Build from clauses
 		foreach($this->from as $alias => $join) {
 			// $join can be something like this array structure
-			// array('type' => 'inner', 'table' => 'SiteTree', 'filter' => array("SiteTree.ID = 1", 
+			// array('type' => 'inner', 'table' => 'SiteTree', 'filter' => array("SiteTree.ID = 1",
 			// "Status = 'approved'", 'order' => 20))
 			if(is_array($join)) {
 				if(is_string($join['filter'])) $filter = $join['filter'];
 				else if(sizeof($join['filter']) == 1) $filter = $join['filter'][0];
 				else $filter = "(" . implode(") AND (", $join['filter']) . ")";
 
-				$table = strpos(strtoupper($join['table']), 'SELECT') ? $join['table'] : "\"" 
-					. $join['table'] . "\"";
+				//$table = strpos(strtoupper($join['table']), 'SELECT') ? $join['table'] : "\""
+				//	. $join['table'] . "\"";
+				$table = strpos(strtoupper($join['table']), '(SELECT') === 0 ? $join['table'] : "\"" . $join['table'] . "\"";
+
+
 				$aliasClause = ($alias != $join['table']) ? " AS \"" . Convert::raw2sql($alias) . "\"" : "";
-				$this->from[$alias] = strtoupper($join['type']) . " JOIN " 
+				$this->from[$alias] = strtoupper($join['type']) . " JOIN "
 					. $table . "$aliasClause ON $filter";
 			}
 		}
 
 		$sql = DB::getConn()->sqlQueryToString($this);
-		
+
 		if($this->replacementsOld) {
 			$sql = str_replace($this->replacementsOld, $this->replacementsNew, $sql);
 		}
@@ -925,10 +928,10 @@ class SQLQuery {
 		}
 		return $sql;
 	}
-	
+
 	/**
 	 * Return the generated SQL string for this query
-	 * 
+	 *
 	 * @return string
 	 */
 	public function __toString() {
@@ -938,7 +941,7 @@ class SQLQuery {
 			return "<sql query>";
 		}
 	}
-	
+
 	/**
 	 * Execute this query.
 	 * @return SS_Query
@@ -946,27 +949,27 @@ class SQLQuery {
 	public function execute() {
 		return DB::query($this->sql(), E_USER_ERROR);
 	}
-	
+
 	/**
 	 * Checks whether this query is for a specific ID in a table
-	 * 
+	 *
 	 * @todo Doesn't work with combined statements (e.g. "Foo='bar' AND ID=5")
 	 *
 	 * @return boolean
 	 */
 	public function filtersOnID() {
 		$regexp = '/^(.*\.)?("|`)?ID("|`)?\s?=/';
-		
+
 		// Sometimes the ID filter will be the 2nd element, if there's a ClasssName filter first.
 		if(isset($this->where[0]) && preg_match($regexp, $this->where[0])) return true;
 		if(isset($this->where[1]) && preg_match($regexp, $this->where[1])) return true;
-		
+
 		return  false;
 	}
-	
+
 	/**
 	 * Checks whether this query is filtering on a foreign key, ie finding a has_many relationship
-	 * 
+	 *
 	 * @todo Doesn't work with combined statements (e.g. "Foo='bar' AND ParentID=5")
 	 *
 	 * @return boolean
@@ -977,13 +980,13 @@ class SQLQuery {
 			&& preg_match('/^(.*\.)?("|`)?[a-zA-Z]+ID("|`)?\s?=/', $this->where[0])
 		);
 	}
-	
+
 	/// VARIOUS TRANSFORMATIONS BELOW
-	
+
 	/**
-	 * Return the number of rows in this query if the limit were removed.  Useful in paged data sets. 
-	 * @return int 
-	 */ 
+	 * Return the number of rows in this query if the limit were removed.  Useful in paged data sets.
+	 * @return int
+	 */
 	public function unlimitedRowCount($column = null) {
 		// we can't clear the select if we're relying on its output by a HAVING clause
 		if(count($this->having)) {
@@ -1020,16 +1023,16 @@ class SQLQuery {
 	 */
 	public function canSortBy($fieldName) {
 		$fieldName = preg_replace('/(\s+?)(A|DE)SC$/', '', $fieldName);
-		
+
 		return isset($this->select[$fieldName]);
 	}
 
 
 	/**
 	 * Return the number of rows in this query if the limit were removed.  Useful in paged data sets.
-	 * 
+	 *
 	 * @todo Respect HAVING and GROUPBY, which can affect the result-count
-	 * 
+	 *
 	 * @param String $column Quoted, escaped column name
 	 * @return int
 	 */
@@ -1048,7 +1051,7 @@ class SQLQuery {
 		$clone->limit = null;
 		$clone->orderby = null;
 		$clone->groupby = null;
-		
+
 		$count = $clone->execute()->value();
 		// If there's a limit set, then that limit is going to heavily affect the count
 		if($this->limit) {
@@ -1056,7 +1059,7 @@ class SQLQuery {
 				return $this->limit['limit'];
 			else
 				return max(0, $count - $this->limit['start']);
-			
+
 		// Otherwise, the count is going to be the output of the SQL query
 		} else {
 			return $count;
@@ -1065,7 +1068,7 @@ class SQLQuery {
 
 	/**
 	 * Return a new SQLQuery that calls the given aggregate functions on this data.
-	 * 
+	 *
 	 * @param $column An aggregate expression, such as 'MAX("Balance")', or a set of them (as an escaped SQL statement)
 	 * @param $alias An optional alias for the aggregate column.
 	 */
@@ -1094,7 +1097,7 @@ class SQLQuery {
 
 		return $clone;
 	}
-	
+
 	/**
 	 * Returns a query that returns only the first row of this query
 	 */
@@ -1111,19 +1114,19 @@ class SQLQuery {
 	public function lastRow() {
 		$query = clone $this;
 		$offset = $this->limit ? $this->limit['start'] : 0;
-		
+
 		// Limit index to start in case of empty results
 		$index = max($this->count() + $offset - 1, 0);
 		$query->setLimit(1, $index);
 		return $query;
 	}
-	
+
 	/**
 	 * Ensure that framework "auto-generated" table JOINs are first in the finalised SQL query.
-	 * This prevents issues where developer-initiated JOINs attempt to JOIN using relations that haven't actually 
-	 * yet been scaffolded by the framework. Demonstrated by PostGres in errors like: 
+	 * This prevents issues where developer-initiated JOINs attempt to JOIN using relations that haven't actually
+	 * yet been scaffolded by the framework. Demonstrated by PostGres in errors like:
 	 *"...ERROR: missing FROM-clause..."
-	 * 
+	 *
 	 * @param $from array - in the format of $this->select
 	 * @return array - and reorderded list of selects
 	 */
@@ -1132,7 +1135,7 @@ class SQLQuery {
 		$baseFrom = array_shift($from);
 		$this->mergesort($from, function($firstJoin, $secondJoin) {
 			if(
-				!is_array($firstJoin) 
+				!is_array($firstJoin)
 				|| !is_array($secondJoin)
 				|| $firstJoin['order'] == $secondJoin['order']
 			) {
@@ -1141,8 +1144,8 @@ class SQLQuery {
 				return ($firstJoin['order'] < $secondJoin['order']) ?  -1 : 1;
 			}
 		});
-		
-		// Put the first FROM table back into the results 
+
+		// Put the first FROM table back into the results
 		array_unshift($from, $baseFrom);
 		return $from;
 	}
@@ -1152,10 +1155,10 @@ class SQLQuery {
 	 * we have to resort to a merge sort. It's quick and stable: O(n*log(n)).
 	 *
 	 * @see http://stackoverflow.com/q/4353739/139301
-	 * 
+	 *
 	 * @param array &$array - the array to sort
 	 * @param callable $cmpFunction - the function to use for comparison
-	 */ 
+	 */
 	protected function mergesort(&$array, $cmpFunction = 'strcmp') {
 		// Arrays of size < 2 require no action.
 		if (count($array) < 2) {
@@ -1186,7 +1189,7 @@ class SQLQuery {
 				$val2 = next($array2);
 			}
 		} while($val1 && $val2);
-		
+
 		// Merge the remainder
 		while($val1) {
 			$array[key($array1)] = $val1;
